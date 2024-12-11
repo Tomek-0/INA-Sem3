@@ -54,6 +54,11 @@ int main() {
     }
 
     std::cout << "Connected to server.\n";
+    std::cout <<"Choose an option:"<<std::endl;
+    std::cout <<"1. Create game (type create <number of players>)"<<std::endl;
+    std::cout <<"2. List games" << std::endl;
+    std::cout <<"3. Join game (type join <game id>)"<< std::endl;
+    std::cout <<"4. Move"<< std::endl;
 
     // Uruchomienie wątku odbierającego wiadomości od serwera.
     std::thread receiver(receiveMessages, sock);

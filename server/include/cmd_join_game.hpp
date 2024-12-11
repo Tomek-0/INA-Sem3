@@ -1,5 +1,5 @@
-#ifndef __CMDADDGAME__
-#define __CMDADDGAME__
+#ifndef _CMDJOINGAME_
+#define _CMDJOINGAME_
 
 #include <iostream>
 #include <thread>
@@ -19,19 +19,21 @@
 #include "server_controller.hpp"
 #include "game.hpp"
 
-class CmdAddGame : public AbstractCommand {
+class CmdJoinGame : public AbstractCommand {
 public:
-    CmdAddGame(ServerController& controller) : controller(controller) {}
+    CmdJoinGame(ServerController& controller) : controller(controller) {}
 
-    void execute(const std::vector<std::string>& args, int client_number) {
+    void execute(const std::vector<std::string>& args, int game_id) {
+
         Game* game = new Game();
-        controller.add_game(*game);
+        //add metod to controller
+        controller.join_game(game_id);
 
-        controller.send_call("Added game\n", client_number);
+        controller.send_call("Joined game\n", game_id);
     }
 
 private:
     ServerController& controller;
 };
 
-#endif // __CMDADDGAME__
+#endif // _CMDJOINGAME_

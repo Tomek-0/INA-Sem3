@@ -3,6 +3,8 @@
 
 #include "cmd_add_game.hpp"
 #include "cmd_list_games.hpp"
+#include "cmd_join_game.hpp"
+#include "cmd_move.hpp"
 
 ServerController::ServerController(Server* server) : server(server) {
     server = server;
@@ -10,38 +12,44 @@ ServerController::ServerController(Server* server) : server(server) {
 }
 
 void ServerController::initialize_commands() {
-    command_registry_[1] = std::make_unique<CmdAddGame>(*this);
-    command_registry_[2] = std::make_unique<CmdListGames>(*this);
+    command_registry_["create"] = std::make_unique<CmdAddGame>(*this);
+    command_registry_["list"] = std::make_unique<CmdListGames>(*this);
+    command_registry_["join"] = std::make_unique<CmdJoinGame>(*this);
+    command_registry_["move"] = std::make_unique<CmdMove>(*this);
 }
 
-std::vector<int> parse_stvi(const std::string& message) {
-    std::istringstream iss(message);
-    std::vector<int> args;
-    int value;
-    while (iss >> value) {
-        args.push_back(value);
+
+std::vector<std::string> parse_stvs(const std::string& message) {
+    std::vector<std::string> tokens;
+    std::istringstream stream(message);
+    std::string token;
+    while (stream >> token) { 
+        tokens.push_back(token);
     }
-    return args;
+    return tokens;
 }
 
 void ServerController::parse_call(const std::string& message, int client_number) {
-    std::vector<int> args = parse_stvi(message);
+    // Messeage is in format: "command arg1 arg2 ..."
+    std::vector<std::string> tokens = parse_stvs(message); 
 
-    if (args.empty()) {
+    if (tokens.empty()) {
         return;
     }
 
+    
+    std::string command_name = tokens[0];
+    tokens.erase(tokens.begin()); 
 
-    int command_index = args[0];
-    args.erase(args.begin());
+    std::cout << "execute " << command_name << std::endl;
 
-    std::cout << "execute " <<args[0]<< std::endl;
-    auto it = command_registry_.find(command_index);
+    // Szukamy polecenia w rejestrze
+    auto it = command_registry_.find(command_name);
     if (it != command_registry_.end()) {
-        it->second->execute(args, client_number);
-    }
-    else {
-        std::cerr << "Command not found: " << command_index << std::endl;
+        // Przekazujemy pozostałe tokeny jako argumenty oraz numer klienta
+        it->second->execute(tokens, client_number);
+    } else {
+        std::cerr << "Command not found: " << command_name << std::endl;
     }
 }
 
@@ -61,3 +69,14 @@ std::vector<Game> ServerController::game_list() {
     return current_games;
 }
 
+void ServerController::join_game(int game_id){
+
+    //TODO: Add player to the game
+    current_games.at(game_id);
+}
+
+void ServerController::move(int x1, int y1, int x2, int y2){
+
+    //TODO: Implemement movement
+    
+}

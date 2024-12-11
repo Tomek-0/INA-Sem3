@@ -19,5 +19,7 @@ int main() {
     }
 
     server.start_server();
+
+    
     return 0;
 }

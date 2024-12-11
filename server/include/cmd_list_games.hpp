@@ -22,7 +22,7 @@ class CmdListGames : public AbstractCommand {
 public:
     CmdListGames(ServerController& controller) : controller(controller) {}
 
-    void execute(const std::vector<int>& args, int client_number) {
+    void execute(const std::vector<std::string>& args, int client_number) {
         const auto& games = controller.game_list();
 
         std::string out = "";

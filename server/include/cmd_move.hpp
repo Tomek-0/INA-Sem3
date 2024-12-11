@@ -1,5 +1,5 @@
-#ifndef __CMDADDGAME__
-#define __CMDADDGAME__
+#ifndef __CMDMOVE__
+#define __CMDMOVE__
 
 #include <iostream>
 #include <thread>
@@ -19,15 +19,24 @@
 #include "server_controller.hpp"
 #include "game.hpp"
 
-class CmdAddGame : public AbstractCommand {
+class CmdMove : public AbstractCommand {
 public:
-    CmdAddGame(ServerController& controller) : controller(controller) {}
+    CmdMove(ServerController& controller) : controller(controller) {}
 
     void execute(const std::vector<std::string>& args, int client_number) {
         Game* game = new Game();
-        controller.add_game(*game);
 
-        controller.send_call("Added game\n", client_number);
+        
+        
+        int x1 = std::stoi(args[0]);
+        int y1 = std::stoi(args[1]);
+        int x2 = std::stoi(args[2]);
+        int y2 = std::stoi(args[3]);
+       
+
+        controller.move(x1, y1);
+
+        controller.send_call("Moved (x1,y1) to (x2,y2)\n", client_number);
     }
 
 private:
