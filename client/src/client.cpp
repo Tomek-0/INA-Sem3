@@ -8,37 +8,24 @@
 #include <arpa/inet.h> 
 #include <sys/socket.h>
 
-#include "client.hpp"
-
+#define PORT 8080
 #define BUFFER_SIZE 1024
 
-Client::Client(const std::string& ip, int port)
-    : server_ip(ip), port(port), sock(0), connected(false) {}
-
-Client::~Client() {
-    disconnect();
-}
-
-void Client::receive_messages() {
+void receiveMessages(int socket) {
     char buffer[BUFFER_SIZE];
-    std::cout << "started reveive_messages\n";
-    while (connected) {
+    while (true) {
         memset(buffer, 0, BUFFER_SIZE);
-        int bytes_read = read(sock, buffer, BUFFER_SIZE);
+        int bytes_read = read(socket, buffer, BUFFER_SIZE);
         if (bytes_read <= 0) {
             std::cout << "Disconnected from server.\n";
-            connected = false;
-            close(sock);
-            break;
+            close(socket);
+            exit(0);
         }
-
-        if (message_callback) {
-            message_callback(std::string(buffer));
-        }
+        std::cout << buffer;
     }
 }
 
-std::string Client::transform_message(const std::string& input) {
+std::string transformMessage(const std::string& input) {
     std::istringstream iss(input);
     std::ostringstream oss;
 
@@ -69,54 +56,53 @@ std::string Client::transform_message(const std::string& input) {
     return oss.str();
 }
 
-bool Client::connect_to_server() {
+int main() {
+    int sock = 0;
     struct sockaddr_in serv_addr;
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) {
         perror("Socket creation error");
-        return false;
+        return -1;
     }
 
     memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(port);
+    serv_addr.sin_port = htons(PORT);
 
     if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {
         std::cerr << "Invalid address/ Address not supported \n";
-        return false;
+        return -1;
     }
 
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
         perror("Connection failed");
-        return false;
+        return -1;
     }
 
-    connected = true;
-    std::cout << "Connected true" << std::endl;
-    return true;
-}
+    std::cout << "Connected to server.\n";
+    std::cout << "Choose an option:" << std::endl;
+    std::cout << "1. Create game (type: create <number of players>)" << std::endl;
+    std::cout << "2. List games (type: list)" << std::endl;
+    std::cout << "3. Join game (type: join <game id>)" << std::endl;
+    std::cout << "4. Move (type: move <x y>)" << std::endl;
+    std::cout << "5. Exit game (type: exit)" << std::endl;
 
-void Client::start_receiving() {
-    receiver_thread = std::thread(&Client::receive_messages, this);
-    receiver_thread.detach();
-}
+    std::thread receiver(receiveMessages, sock);
+    receiver.detach();
 
-void Client::send_message(const std::string& message) {
-    // Change string command into integer
-    std::string transformedMessage = transform_message(message);
+    std::string message;
+    while (true) {
+        std::getline(std::cin, message);
+        if (message.empty()) continue;
 
-    transformedMessage += "\n"; 
-    send(sock, transformedMessage.c_str(), transformedMessage.length(), 0);
-}
+        // Change string command into integer
+        std::string transformedMessage = transformMessage(message);
 
-void Client::set_message_callback(MessageCallback callback) {
-    message_callback = callback;
-}
-
-void Client::disconnect() {
-    if (connected) {
-        close(sock);
-        connected = false;
+        transformedMessage += "\n"; 
+        send(sock, transformedMessage.c_str(), transformedMessage.length(), 0);
     }
+
+    close(sock);
+    return 0;
 }

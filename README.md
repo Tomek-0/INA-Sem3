@@ -20,5 +20,9 @@ make
 ### System diagram
 ![System diagram](uml/system.png)
 
-### Activity diagram for user
-![Usage diagram](uml/activitydiagram.png)
+### Usage diagram
+![Usage diagram](uml/usage.png)
+
+### To do
+- Użyć instrukcji switch do określenia rodzaju gry na podstawie liczby graczy (client number).
+- Stworzyć strukturę danych przechowującą stan gry (ruchy graczy i odpowiedzi serwera).
